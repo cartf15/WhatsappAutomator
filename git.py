@@ -3,17 +3,21 @@ import os
 
 # account_sid = os.environ['twl_sid']
 # auth_token = os.environ['twl_tkn']
-account_sid = 'AC6340922d81a8aaa23e3b36a2ff420ffb' 
-auth_token = 'f384519126914e186e5e0c938dfb6e2d' 
+account_sid = 'AC32dec65d1dceb3607b266febad8cc38f' 
+auth_token = 'c36e6ad1831e99a23920dbc365169d2c'
 
 
 
 client = Client(account_sid, auth_token) 
  
-message = client.messages.create( 
-                              from_='whatsapp:+14155238886',  
-                              body='Your appointment is coming up on July 21 at 3PM',      
-                              to='whatsapp:+573142993448' 
-                          ) 
- 
-print(message.sid)
+ns=['+573142993448','+573176484553','+573107380750'] 
+ms=1
+for m in range(ms):
+    for n in ns: 
+        message = client.messages.create( 
+                                    from_='whatsapp:+14155238886',  
+                                    body='Hola, es el momento de hacer un cambio en tu vida, aprende ingles AHORA! con un metodo vanguardista sin salir del pais, preguntame como Test N {}'.format(m),      
+                                    to='whatsapp:{}'.format(n)
+                                ) 
+    
+    # print(message.sid)
