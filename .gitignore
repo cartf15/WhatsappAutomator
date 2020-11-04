@@ -1,3 +1,4 @@
 credentials.config
 *.docx
 *.tmp
+*.log
