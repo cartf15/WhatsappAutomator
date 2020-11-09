@@ -2,7 +2,8 @@
 #     from selenium import webdriver
 # except NameError as e :
 #     print  (e)
-
+import sys
+sys.setrecursionlimit(2000)
 
 from selenium import webdriver
 import chromedriver_binary 
@@ -12,52 +13,84 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 import pyperclip
 import time 
+import pandas as pd
+import logging
 
-browser = webdriver.Chrome(
-    executable_path ='C:/Program Files/chromedriver/chromedriver.exe')
 
-browser.maximize_window()
-browser.get('https://web.whatsapp.com/')
+CHROMEDRIVER='C:/Program Files/chromedriver/chromedriver.exe'
+FILEPATH='C:/Users/USUARIO/Downloads/FOCUS123.csv'
+OUTFILEPATH='C:/Users/USUARIO/Downloads/Contactos_A_EnviarWhatsapp.txt'
+MSGPATH='msg.txt'
 
-with open ('groups.txt', 'r', encoding='utf8') as f:
-    groups=[group.strip() for group in f.readlines()]
 
-with open ('msg.txt','r',encoding='utf8') as f:
-    msg = f.read()
+def __browser__ (CHROMEDRIVER):
+
+    browser = webdriver.Chrome(
+        executable_path =CHROMEDRIVER)
+    browser.maximize_window()
+    browser.get('https://web.whatsapp.com/')
+    return browser
+
+
+def __dataprocess__ (FILEPATH,OUTFILEPATH,MSGPATH):
+    csv=pd.read_csv(FILEPATH,sep=',')
+    csv=csv.iloc[:, 0:2]
+    csv.to_csv(OUTFILEPATH,index = False, header=False,sep=',')
+
+    with open (OUTFILEPATH,'r',encoding='utf8') as f:
+        groups=[group.strip().replace(',',' ') for group in f.readlines()]
+
+    # with open ('groups.txt', 'r', encoding='utf8') as f:
+    #     groups=[group.strip() for group in f.readlines()]
+
+    with open (MSGPATH,'r',encoding='utf8') as f:
+        msg = f.read()
+    
+    return groups, msg
 
 # time.sleep(30)
 
-for group in groups:
-    search_xpath = '//div[@contenteditable="true"][@data-tab="3"]'
-    search_box = WebDriverWait(browser, 500).until(
-        EC.presence_of_element_located((By.XPATH, search_xpath))
-    )
-    # '//*[@id="side"]/div[1]/div/label/div/div[2]''
-    
-    search_box.clear()
+def __sendMsg__(browser,groups,msg):
 
-    time.sleep(1)
+    for group in groups:
+        search_xpath = '//div[@contenteditable="true"][@data-tab="3"]'
+        search_box = WebDriverWait(browser, 500).until(
+            EC.presence_of_element_located((By.XPATH, search_xpath))
+        )
+        # '//*[@id="side"]/div[1]/div/label/div/div[2]''
+        
+        search_box.clear()
 
-    pyperclip.copy(group)
+        time.sleep(1)
 
-    search_box.send_keys(Keys.SHIFT, Keys.INSERT)  # Keys.CONTROL + "v"
+        pyperclip.copy(group)
 
-    time.sleep(2)
+        
+        search_box.send_keys(Keys.SHIFT, Keys.INSERT)  # Keys.CONTROL + "v"
 
-    group_xpath = f'//span[@title="{group}"]'
-    group_title = browser.find_element_by_xpath(group_xpath)
+        time.sleep(2)
 
-    group_title.click()
+        try : 
+            group_xpath = f'//span[@title="{group}"]'
+            group_title = browser.find_element_by_xpath(group_xpath)
 
-    time.sleep(1)
+            group_title.click()
 
-    input_xpath = '//div[@contenteditable="true"][@data-tab="6"]'
-    input_box = browser.find_element_by_xpath(input_xpath)
+            time.sleep(1)
 
-    pyperclip.copy(msg)
-    input_box.send_keys(Keys.SHIFT, Keys.INSERT)  # Keys.CONTROL + "v"
-    input_box.send_keys(Keys.ENTER)
+            input_xpath = '//div[@contenteditable="true"][@data-tab="6"]'
+            input_box = browser.find_element_by_xpath(input_xpath)
 
-    time.sleep(2)
+            pyperclip.copy(msg.format(group.split()[0]))
+            input_box.send_keys(Keys.SHIFT, Keys.INSERT)  # Keys.CONTROL + "v"
+            input_box.send_keys(Keys.ENTER)
 
-    
+            time.sleep(2)
+                    
+        except Exception as e:
+            logging.info(e)
+
+
+browser=__browser__(CHROMEDRIVER)
+groups, msg= __dataprocess__ (FILEPATH,OUTFILEPATH,MSGPATH)
+__sendMsg__(browser,groups,msg)

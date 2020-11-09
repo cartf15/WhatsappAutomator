@@ -3,3 +3,4 @@ credentials.config
 *.tmp
 *.log
 *.png
+*.ipynb
